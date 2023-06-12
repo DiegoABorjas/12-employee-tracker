@@ -1,44 +1,56 @@
 const inquirer = require('inquirer')
 const mysql = require('mysql2')
 
-// import question variable 
 const { question } = require('./utils/question')
 
-// Connect to database
-const db = mysql.createConnection(
-    {
-      host: 'localhost',
-      user: 'root',
-      password: 'password',
-      database: 'employees_db'
-    },
-    console.log(`Connected to the employees_db database.`)
-);
+const Department = require('./lib/departments')
+const Role = require('./lib/roles')
+const Employee = require('./lib/employees')
 
-// Function to prompt the questions
 function promptQuestions() {
     inquirer.prompt(question).then(function(answer) {
-        handleAnswers(answer)
+        return handleAnswers(answer)
     })
 }
 
-function handleAnswers(response) {
+async function handleAnswers(response) {
+    // IF the response is to view all employees use the Employees method to query them all.
     if (response.answer === 'View all Employees') {
-        const sql = `SELECT * FROM employees;`
-        db.query(sql, (err, rows) => {
-            if (err) throw err
-            console.table(rows)
-            promptQuestions()
-        })
-    if (response.answer === 'Quit')
-            console.log('quitting program')
-            db.end()
+        const employees = new Employee
+        await employees.getEmployees()
+        promptQuestions()
+    }
+
+    if (response.answer === 'Add Employee') {
+        const employees = new Employee
+        await employees.addEmployee()
+        console.log('New Employee Added')
+        promptQuestions()
+    }
+
+    if (response.answer === 'View all Roles') {
+        const roles = new Role
+        await roles.getRoles()
+        promptQuestions()
+    }
+    if (response.answer === 'Add Role') {
+        const roles = new Role
+        await roles.addRole()
+        promptQuestions()
+    }
+    if (response.answer === 'View all Departments') {
+        const departments = new Department
+        await departments.getDepartments()
+        promptQuestions()
+    }
+    if (response.answer === 'Add Department') {
+        const departments = new Department
+        await departments.addDepartment()
+        promptQuestions()
+    }
+    else if (response.answer === 'Quit') {
+        process.exit()
     }
 }
 
-// Function to initialize the app
-function onInit() {
-    promptQuestions()
-}
-
-onInit()
+promptQuestions()
